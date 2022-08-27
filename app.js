@@ -17,20 +17,29 @@ io.on('connection', (socket) =>
             users.push(me);
             socket.on('shoot', (arg) =>
             {
-                let time = Date.now();
-                if(hitPoints[arg] == undefined || (time - hitPoints[arg]) < 500)
+                if(users.length == 2)
                 {
-                    hitPoints[arg] = time;
-                    me['score'] = me['score']+1;
-                    
-                    users.forEach((ele) =>
+                    let time = Date.now();
+                    if(hitPoints[arg] == undefined || (time - hitPoints[arg]) < 500)
                     {
-                        if(ele != me)
-                            ele['socket'].emit('delete', arg);
-                        ele['socket'].emit('score', users[0]['score'] + ':' + users[1]['score']);
-                    });
-    
-                    console.log(arg, hitPoints[arg], Object.keys(hitPoints).length);
+                        hitPoints[arg] = time;
+                        me['score'] = me['score']+1;
+                        
+                        users.forEach((ele) =>
+                        {
+                            if(ele != me)
+                                ele['socket'].emit('delete', arg);
+                            ele['socket'].emit('score', users[0]['score'] + ':' + users[1]['score']);
+                        });
+        
+                        console.log(arg, hitPoints[arg], Object.keys(hitPoints).length);
+                    }
+                }
+                else
+                {
+                    console.log('oh! looks bugged, so i reloaded gamers... :)');
+                    if(users[0]['socket'])
+                        users[0]['socket'].disconnect();
                 }
             });
             
@@ -57,7 +66,8 @@ io.on('connection', (socket) =>
             {
                 hitPoints = [];
 
-                users[0]['socket'].disconnect();
+                if(users[0]['socket'])
+                    users[0]['socket'].disconnect();
                 //users.splice(0, 1);
                 //users[0]['socket'].emit('ended', 'ended!');
             }
