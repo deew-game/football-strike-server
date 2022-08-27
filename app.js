@@ -24,7 +24,7 @@ io.on('connection', (socket) =>
         socket.on('shoot', (arg) =>
         {
             let time = Date.now();
-            if(hitPoints[arg] == undefined || (hitPoints[arg] - time) < 500)
+            if(hitPoints[arg] == undefined || (time - hitPoints[arg]) < 500)
             {
                 hitPoints[arg] = time;
                 me['score'] = me['score']+1;
