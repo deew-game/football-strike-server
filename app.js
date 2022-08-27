@@ -56,7 +56,10 @@ io.on('connection', (socket) =>
             if(users.length == 1)
             {
                 hitPoints = [];
-                users[0]['socket'].emit('ended', 'ended!');
+
+                users[0]['socket'].disconnect();
+                //users.splice(0, 1);
+                //users[0]['socket'].emit('ended', 'ended!');
             }
     
             if(users.length == 0)
