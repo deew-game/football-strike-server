@@ -33,6 +33,21 @@ io.on('connection', (socket) =>
                         });
         
                         console.log(arg, hitPoints[arg], Object.keys(hitPoints).length);
+
+                        if(Object.keys(hitPoints) >= 9)
+                        {
+                            var winner = (users[0]['score'] > users[1]['score']) ? users[0] : users[1];
+                            var looser = (users[0]['score'] > users[1]['score']) ? users[1] : users[0];
+
+                            winner['socket'].emit('logs2', "Winner, Winner, Chicken Dinner!");
+                            looser['socket'].emit('logs2', "You Lose... :(");
+
+                            setTimeout(function ()
+                            {
+                                if(users[1]['socket'])
+                                    users[1]['socket'].disconnect();
+                            }, 5000);
+                        }
                     }
                 }
                 else
