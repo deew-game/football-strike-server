@@ -34,7 +34,7 @@ io.on('connection', (socket) =>
         
                         console.log(arg, hitPoints[arg], Object.keys(hitPoints).length);
 
-                        if(Object.keys(hitPoints) >= 9)
+                        if(Object.keys(hitPoints).length >= 9)
                         {
                             var winner = (users[0]['score'] > users[1]['score']) ? users[0] : users[1];
                             var looser = (users[0]['score'] > users[1]['score']) ? users[1] : users[0];
