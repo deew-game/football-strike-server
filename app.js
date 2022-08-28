@@ -9,9 +9,9 @@ io.on('connection', (socket) =>
 {
     try
     {
-        var address = socket.handshake.address;
-        console.log('> user connected', socket.id, '(', users.length+1, ')', address.address, ':', address.port);
-        let me = {'socket' : socket, 'score' : 0, 'ip' : address.address};
+        var address = socket.request.connection.remoteAddress;
+        console.log('> user connected', socket.id, '(', users.length+1, ')', address);
+        let me = {'socket' : socket, 'score' : 0, 'ip' : address};
         users.forEach((ele) =>
             {
                 if(ele['ip'] == me['ip'])
