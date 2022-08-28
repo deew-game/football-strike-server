@@ -12,18 +12,20 @@ io.on('connection', (socket) =>
         var address = socket.request.connection.remoteAddress;
         console.log('> user connected', socket.id, '(', users.length+1, ')', address);
         let me = {'socket' : socket, 'score' : 0, 'ip' : address};
+        let canBeAdded = true;
         users.forEach((ele) =>
             {
                 if(ele['ip'] == me['ip'])
                 {
-                    ele['socket'].disconnect();
-                    me['socket'].disconnect();
-                    var inde = users.indexOf(ele);
-                    if (inde > -1) users.splice(inde, 1);
+                    canBeAdded = false;
+                    //ele['socket'].disconnect();
+                    //me['socket'].disconnect();
+                    //var inde = users.indexOf(ele);
+                    //if (inde > -1) users.splice(inde, 1);
                 }
             });
 
-        if(users.length < 2)
+        if(users.length < 2 && canBeAdded)
         {
             users.push(me);
             socket.on('shoot', (arg) =>
