@@ -20,6 +20,9 @@ io.on('connection', (socket) =>
                     //canBeAdded = false;
                     //ele['socket'].disconnect();
                     //me['socket'].disconnect();
+                    
+                    ele['socket'].emit('logs2', "You're Kicked! someone with same ip conectet!");
+                    ele['socket'].disconnect();
                     var inde = users.indexOf(ele);
                     if (inde > -1) users.splice(inde, 1);
                 }
