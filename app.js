@@ -9,8 +9,18 @@ io.on('connection', (socket) =>
 {
     try
     {
-        console.log('> user connected', socket.id, '(', users.length+1, ')');
-        let me = {'socket' : socket, 'score' : 0};
+        var address = socket.handshake.address;
+        console.log('> user connected', socket.id, '(', users.length+1, ')', address.address, ':', address.port);
+        let me = {'socket' : socket, 'score' : 0, 'ip' : address.address};
+        users.forEach((ele) =>
+            {
+                if(ele['ip'] == me['ip'])
+                {
+                    ele['socket'].disconnect();
+                    var inde = users.indexOf(ele);
+                    if (inde > -1) users.splice(inde, 1);
+                }
+            });
 
         if(users.length < 2)
         {
