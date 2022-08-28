@@ -17,11 +17,11 @@ io.on('connection', (socket) =>
             {
                 if(ele['ip'] == me['ip'])
                 {
-                    canBeAdded = false;
+                    //canBeAdded = false;
                     //ele['socket'].disconnect();
                     //me['socket'].disconnect();
-                    //var inde = users.indexOf(ele);
-                    //if (inde > -1) users.splice(inde, 1);
+                    var inde = users.indexOf(ele);
+                    if (inde > -1) users.splice(inde, 1);
                 }
             });
 
