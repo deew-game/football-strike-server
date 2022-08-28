@@ -16,8 +16,9 @@ io.on('connection', (socket) =>
             {
                 if(ele['ip'] == me['ip'])
                 {
+                    me['ip'].disconnect();
                     me['socket'].disconnect();
-                    var inde = users.indexOf(me);
+                    var inde = users.indexOf(ele);
                     if (inde > -1) users.splice(inde, 1);
                 }
             });
