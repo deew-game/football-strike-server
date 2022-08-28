@@ -22,7 +22,7 @@ io.on('connection', (socket) =>
                     //me['socket'].disconnect();
                     
                     ele['socket'].emit('logs2', "You're Kicked! someone with same ip conectet!");
-                    ele['socket'].disconnect();
+                    //ele['socket'].disconnect();
                     var inde = users.indexOf(ele);
                     if (inde > -1) users.splice(inde, 1);
                 }
