@@ -63,8 +63,8 @@ io.on('connection', (socket) =>
 
                 if(!founded)
                 {
-                    let newroom = {'id' : ids, 'open' : true, 'users' : [me]};
-                    rooms.push(newroom);
+                    us = {'id' : ids, 'open' : true, 'users' : [me]};
+                    rooms.push(us);
                     console.log('> user', socket.id, 'created room id(', ids, ')  -->  ', id);
                     ids++;
                 }
