@@ -142,12 +142,14 @@ io.on('connection', (socket) =>
     socket.on('disconnect', () =>
     {
         if(me !=  null)
+        {
             console.log('> user lagged', socket.id, '  -->  ', me['id']);
 
-        if(us['users'].length == 2)
-        {
-            let other = (room['users'][0] == me) ? room['users'][1] : room['users'][0];
-            other['socket'].emit('timer', "1");
+            if(us['users'].length == 2)
+            {
+                let other = (room['users'][0] == me) ? room['users'][1] : room['users'][0];
+                other['socket'].emit('timer', "1");
+            }
         }
     });
 });
