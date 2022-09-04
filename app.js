@@ -13,7 +13,7 @@ io.on('connection', (socket) =>
     let us = null, me = null;
     socket.on('join', (id) =>
     {
-        console.log('> user connected', socket.id, '(', users.length+1, ')  -->  ', id);
+        console.log('> user connected', socket.id, '()  -->  ', id);
         try
         {
             //-- check user was already playing --> so rejoin him!
@@ -166,6 +166,7 @@ setInterval(() =>
         {
             if(user['disconnect'] != 0 && (now - user['disconnect']) > 30000)
             {
+                console.log('> user disconnected', user['socket'].id, '()  -->  ', user['id']);
                 let winner = (room['users'][0] == user) ? room['users'][1] : room['users'][0];
                 winner.emit('logs2', "You'r friend scared and run!<br>So<br>Winner, Winner, Chicken Dinner!");
                 room['open'] = false;
