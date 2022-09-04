@@ -2,7 +2,7 @@ const app = require('express')();
 const http = require('http').createServer(app);
 const io = require('socket.io')(http, {'pingInterval': 3000, 'pingTimeout': 3000});
 
-var rooms = [], hits = [];
+var rooms = [];
 var ids = 0;
 app.get('/', (req, res) => { res.end("<b>Hello Deew's</b>"); });
 
@@ -30,6 +30,15 @@ io.on('connection', (socket) =>
                         
                         me['socket'] = socket;
                         me['disconnect'] = 0;
+                        
+                        if(us['users'].length == 2)
+                        {
+                            me['socket'].emit('score', us['users'][0]['score'] + ':' + us['users'][1]['score']);
+                            me['socket'].emit('remake', Object.keys(us['hits']));
+
+                            let other = (room['users'][0] == me) ? room['users'][1] : room['users'][0];
+                            other['socket'].emit('timer', "0");
+                        }
                     }
                 });
             });
@@ -134,6 +143,12 @@ io.on('connection', (socket) =>
     {
         if(me !=  null)
             console.log('> user lagged', socket.id, '  -->  ', me['id']);
+
+        if(us['users'].length == 2)
+        {
+            let other = (room['users'][0] == me) ? room['users'][1] : room['users'][0];
+            other['socket'].emit('timer', "1");
+        }
     });
 });
 http.listen(7001, () => { console.log('> server started on 7001'); });
@@ -149,7 +164,7 @@ setInterval(() =>
         {
             if(user['disconnect'] != 0 && (now - user['disconnect']) > 30000)
             {
-                winner = (room['users'][0] == user) ? room['users'][1] : room['users'][0];
+                let winner = (room['users'][0] == user) ? room['users'][1] : room['users'][0];
                 winner.emit('logs2', "You'r friend scared and run!<br>So<br>Winner, Winner, Chicken Dinner!");
                 room['open'] = false;
 
