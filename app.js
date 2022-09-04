@@ -107,7 +107,7 @@ io.on('connection', (socket) =>
                                     us['users'][1]['socket'].emit('ended', 'ended!');
                             }, 5000);
 
-                            room['open'] = false;
+                            us['open'] = false;
 
                             let indx = rooms.indexOf(room);
                             if (indx > -1)
@@ -144,6 +144,7 @@ io.on('connection', (socket) =>
         if(me !=  null)
         {
             console.log('> user lagged', socket.id, '  -->  ', me['id']);
+            me['disconnect'] = Date.now();
 
             if(us['users'].length == 2)
             {
