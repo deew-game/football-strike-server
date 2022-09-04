@@ -1,116 +1,168 @@
 const app = require('express')();
 const http = require('http').createServer(app);
-const io = require('socket.io')(http, {'pingInterval': 25000, 'pingTimeout': 25000});
+const io = require('socket.io')(http, {'pingInterval': 3000, 'pingTimeout': 3000});
 
-var users = [], hitPoints = [];
+var rooms = [], hits = [];
+var ids = 0;
 app.get('/', (req, res) => { res.end("<b>Hello Deew's</b>"); });
+
+
 
 io.on('connection', (socket) =>
 {
-    try
+    let us = null, me = null;
+    socket.on('join', (id) =>
     {
-        var address = socket.request.connection.remoteAddress;
-        console.log('> user connected', socket.id, '(', users.length+1, ')', address);
-        let me = {'socket' : socket, 'score' : 0, 'ip' : address};
-        let canBeAdded = true;
-        users.forEach((ele) =>
+        console.log('> user connected', socket.id, '(', users.length+1, ')  -->  ', id);
+        try
+        {
+            //-- check user was already playing --> so rejoin him!
+            let alreadyPlaying = false;
+            rooms.forEach(room =>
             {
-                if(ele['ip'] == me['ip'])
+                room['users'].forEach((user) =>
                 {
-                    //canBeAdded = false;
-                    //ele['socket'].disconnect();
-                    //me['socket'].disconnect();
-                    
-                    ele['socket'].emit('logs2', "You're Kicked! someone with same ip conectet!");
-                    //ele['socket'].disconnect();
-                    var inde = users.indexOf(ele);
-                    if (inde > -1) users.splice(inde, 1);
-                }
+                    if(user['id'] == id)
+                    {
+                        alreadyPlaying = true;
+                        us = room;
+                        me = user;
+                        
+                        me['socket'] = socket;
+                        me['disconnect'] = 0;
+                    }
+                });
             });
 
-        if(users.length < 2 && canBeAdded)
-        {
-            users.push(me);
+
+            //-- find or create some room to join... !!!
+            if(!alreadyPlaying)
+            {
+                me = {'socket' : socket, 'score' : 0, 'id' : id, 'disconnect' : 0};
+                let founded = false;
+                rooms.forEach(room =>
+                {
+                    if(room['users'].length == 1)
+                    {
+                        us = room;
+                        room['users'].push(me);
+                        room['users'][0]['socket'].emit('started', 'started!');
+                        room['users'][1]['socket'].emit('started', 'started!');
+                        founded = true;
+                    }
+                });
+
+                if(!founded)
+                {
+                    let newroom = {'id' : ids, 'open' : true, 'users' : [me]};
+                    rooms.push(newroom);
+                    console.log('> user', socket.id, 'created room id(', ids, ')  -->  ', id);
+                    ids++;
+                }
+            }
+
+            
+            //-- those 2 guys in room are ready --> let's PLAY.
             socket.on('shoot', (arg) =>
             {
-                if(users.length == 2)
+                if(us['open'] && us['users'].length == 2)
                 {
                     let time = Date.now();
-                    if(hitPoints[arg] == undefined || (time - hitPoints[arg]) < 500)
+                    if(us['hits'][arg] == undefined || (time - us['hits'][arg]) < 500)
                     {
-                        hitPoints[arg] = time;
+                        us['hits'][arg] = time;
                         me['score'] = me['score']+1;
                         
-                        users.forEach((ele) =>
+                        us['users'].forEach((ele) =>
                         {
-                            if(ele != me)
+                            if(ele != me['socket'])
                                 ele['socket'].emit('delete', arg);
-                            ele['socket'].emit('score', users[0]['score'] + ':' + users[1]['score']);
+                            ele['socket'].emit('score', us['users'][0]['score'] + ':' + us['users'][1]['score']);
                         });
         
-                        console.log(arg, hitPoints[arg], Object.keys(hitPoints).length);
+                        console.log(arg, us['hits'][arg], Object.keys(us['hits']).length);
 
-                        if(Object.keys(hitPoints).length >= 9)
+                        if(Object.keys(us['hits']).length >= 9)
                         {
-                            var winner = (users[0]['score'] > users[1]['score']) ? users[0] : users[1];
-                            var looser = (users[0]['score'] > users[1]['score']) ? users[1] : users[0];
+                            let winner = (us['users'][0]['score'] > us['users'][1]['score']) ? us['users'][0] : us['users'][1];
+                            let looser = (us['users'][0]['score'] > us['users'][1]['score']) ? us['users'][1] : us['users'][0];
 
                             winner['socket'].emit('logs2', "Winner, Winner, Chicken Dinner!");
                             looser['socket'].emit('logs2', "You Lose... :(");
 
                             setTimeout(function ()
                             {
-                                if(users[1]['socket'])
-                                    users[1]['socket'].disconnect();
+                                if(us['users'][0]['socket'])
+                                    us['users'][0]['socket'].emit('ended', 'ended!');
+                                if(us['users'][1]['socket'])
+                                    us['users'][1]['socket'].emit('ended', 'ended!');
                             }, 5000);
+
+                            room['open'] = false;
+
+                            let indx = rooms.indexOf(room);
+                            if (indx > -1)
+                                rooms.splice(indx, 1);
                         }
                     }
                 }
                 else
                 {
+                    if(me['socket'])
+                        me['socket'].emit('logs2', "You'r room was closed!<br>we are teleporting you soon...");
+    
+                    setTimeout(function ()
+                    {
+                        if(me['socket'])
+                            me['socket'].emit('ended', 'ended!');
+                    }, 5000);
+
                     console.log('oh! looks bugged, so i reloaded gamers... :)');
-                    if(users[0]['socket'])
-                        users[0]['socket'].disconnect();
                 }
             });
-            
-            if(users.length == 2)
-                users.forEach((ele) =>
-                {
-                    ele['socket'].emit('started', 'started!');
-                });
         }
-        else
+        catch(err)
         {
-            socket.emit('logs', "Error: on demo version we only support 2 members!");
-            socket.disconnect();
+            console.log('> Looks like we have some error... (1)');
+            console.log('> details: ' + err);
         }
-    
-        socket.on('disconnect', () =>
-        {
-            console.log('> user disconnected', socket.id, '(', users.length-1, ')');
-            var index = users.indexOf(me);
-            if (index > -1)
-                users.splice(index, 1);
-    
-            if(users.length == 1)
-            {
-                hitPoints = [];
+    });
 
-                if(users[0]['socket'])
-                    users[0]['socket'].disconnect();
-                //users.splice(0, 1);
-                //users[0]['socket'].emit('ended', 'ended!');
-            }
-    
-            if(users.length == 0)
-                hitPoints = [];
-        });
-    }
-    catch(err)
+
+    //-- log when temp disconnecting ...
+    socket.on('disconnect', () =>
     {
-        console.log('> Looks like we have some error...');
-        console.log('> details: ' + err);
-    }
+        if(me !=  null)
+            console.log('> user lagged', socket.id, '  -->  ', me['id']);
+    });
 });
 http.listen(7001, () => { console.log('> server started on 7001'); });
+
+
+//-- check connection timeouts --> to kick their ass!
+setInterval(() =>
+{
+    let now = Date.now();
+    rooms.forEach(room =>
+    {
+        room['users'].forEach((user) =>
+        {
+            if(user['disconnect'] != 0 && (now - user['disconnect']) > 30000)
+            {
+                winner = (room['users'][0] == user) ? room['users'][1] : room['users'][0];
+                winner.emit('logs2', "You'r friend scared and run!<br>So<br>Winner, Winner, Chicken Dinner!");
+                room['open'] = false;
+
+                setTimeout(function ()
+                {
+                    if(winner['socket'])
+                        winner['socket'].emit('ended', 'ended!');
+                }, 5000);
+
+                let indx = rooms.indexOf(room);
+                if (indx > -1)
+                    rooms.splice(indx, 1);
+            }
+        });
+    });
+}, 1000);
