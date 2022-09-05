@@ -7,13 +7,11 @@ var ids = 0;
 app.get('/', (req, res) => { res.end("<b>Hello Deew's</b>"); });
 
 
-
 io.on('connection', (socket) =>
 {
     us = null, me = null;
     socket.on('join', (id) =>
     {
-        console.log('> user connected', socket.id, '()  -->  ', id);
         //try
         //{
             //-- check user was already playing --> so rejoin him!
@@ -25,6 +23,7 @@ io.on('connection', (socket) =>
                     if(user['id'] == id)
                     {
                         alreadyPlaying = true;
+                        console.log('> user rejoined', socket.id, '()  -->  ', id);
                         us = room;
                         me = user;
                         
@@ -34,7 +33,13 @@ io.on('connection', (socket) =>
                         if(us['users'].length == 2)
                         {
                             me['socket'].emit('score', us['users'][0]['score'] + ':' + us['users'][1]['score']);
-                            me['socket'].emit('remake', Object.keys(us['hits']));
+
+                            let hits = "hits";
+                            Object.keys(us['hits']).forEach((hit) =>
+                            {
+                                hits += ":" + hit;
+                            });
+                            me['socket'].emit('remake', hits);
 
                             let other = (us['users'][0] == me) ? us['users'][1] : us['users'][0];
                             other['socket'].emit('timer', "0");
@@ -47,6 +52,7 @@ io.on('connection', (socket) =>
             //-- find or create some room to join... !!!
             if(!alreadyPlaying)
             {
+                console.log('> user connnected', socket.id, '()  -->  ', id);
                 me = {'socket' : socket, 'score' : 0, 'id' : id, 'disconnect' : 0};
                 let founded = false;
                 rooms.forEach(room =>
