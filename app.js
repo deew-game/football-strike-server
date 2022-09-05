@@ -71,7 +71,7 @@ io.on('connection', (socket) =>
                             me['socket'].emit('timer', "1", timeToTimeout.toString());
                         }
                         else
-                            other['socket'].emit('timer', "0", "0");
+                            me['socket'].emit('timer', "0", "0");
                         founded = true;
                     }
                 });
@@ -81,7 +81,7 @@ io.on('connection', (socket) =>
                     us = {'id' : ids, 'open' : true, 'hits' : [], 'users' : [me]};
                     rooms.push(us);
                     console.log('> user', socket.id, 'created room id(', ids, ')  -->  ', id);
-                    other['socket'].emit('timer', "0", "0");
+                    me['socket'].emit('timer', "0", "0");
                     ids++;
                 }
             }
