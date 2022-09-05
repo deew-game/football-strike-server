@@ -3,6 +3,7 @@ const http = require('http').createServer(app);
 const io = require('socket.io')(http, {'pingInterval': 3000, 'pingTimeout': 3000});
 
 var rooms = [];
+var timeout = 30; //put here a timeout as second 
 var ids = 0;
 app.get('/', (req, res) => { res.end("<b>Hello Deew's</b>"); });
 
@@ -66,8 +67,8 @@ io.on('connection', (socket) =>
 
                         if(us['users'][0]['disconnect'] != 0)
                         {
-                            let timeToTimeout = Math.floor(30 - ((Date.now() - us['users'][0]['disconnect']) / 1000));
-                            me.emit('timer', "1", timeToTimeout.toString());
+                            let timeToTimeout = Math.floor(timeout - ((Date.now() - us['users'][0]['disconnect']) / 1000));
+                            me['socket'].emit('timer', "1", timeToTimeout.toString());
                         }
                         founded = true;
                     }
@@ -161,7 +162,7 @@ io.on('connection', (socket) =>
             if(us['users'].length == 2)
             {
                 let other = (us['users'][0] == me) ? us['users'][1] : us['users'][0];
-                other['socket'].emit('timer', "1", "30");
+                other['socket'].emit('timer', "1", timeout.toString());
             }
         }
     });
