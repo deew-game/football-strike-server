@@ -165,7 +165,6 @@ setInterval(() =>
     {
         room['users'].forEach((user) =>
         {
-            console.log(user['disconnect']);
             if(user['disconnect'] != 0 && (now - user['disconnect']) > 30000)
             {
                 console.log('> user disconnected', user['socket'].id, '()  -->  ', user['id']);
