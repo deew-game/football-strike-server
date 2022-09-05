@@ -14,8 +14,8 @@ io.on('connection', (socket) =>
     socket.on('join', (id) =>
     {
         console.log('> user connected', socket.id, '()  -->  ', id);
-        try
-        {
+        //try
+        //{
             //-- check user was already playing --> so rejoin him!
             let alreadyPlaying = false;
             rooms.forEach(room =>
@@ -63,7 +63,7 @@ io.on('connection', (socket) =>
 
                 if(!founded)
                 {
-                    us = {'id' : ids, 'open' : true, 'users' : [me]};
+                    us = {'id' : ids, 'open' : true, 'hits' : [], 'users' : [me]};
                     rooms.push(us);
                     console.log('> user', socket.id, 'created room id(', ids, ')  -->  ', id);
                     ids++;
@@ -129,12 +129,12 @@ io.on('connection', (socket) =>
                     console.log('oh! looks bugged, so i reloaded gamers... :)');
                 }
             });
-        }
+        /*}
         catch(err)
         {
             console.log('> Looks like we have some error... (1)');
             console.log('> details: ' + err);
-        }
+        }*/
     });
 
 
