@@ -43,7 +43,16 @@ io.on('connection', (socket) =>
                             me['socket'].emit('remake', hits);
 
                             let other = (us['users'][0] == me) ? us['users'][1] : us['users'][0];
-                            other['socket'].emit('timer', "0", "0");
+                            if(other['disconnect'] == 0)
+                            {
+                                me['socket'].emit('timer', "0", "0");
+                                other['socket'].emit('timer', "0", "0");
+                            }
+                            else
+                            {
+                                let timeToTimeout = Math.floor(timeout - ((Date.now() - other['disconnect']) / 1000));
+                                me['socket'].emit('timer', "1", timeToTimeout.toString());
+                            }
                         }
                     }
                 });
@@ -197,6 +206,7 @@ setInterval(() =>
                     if(winner['disconnect'] == 0)
                         winner['socket'].emit('logs2', "You'r friend scared and run!<br>so...<br>Winner, Winner, Chicken Dinner!");
 
+                    console.log('> user disconnected', winner['socket'].id, '()  -->  ', winner['id']);
                     setTimeout(function ()
                     {
                         if(winner['disconnect'] == 0)
