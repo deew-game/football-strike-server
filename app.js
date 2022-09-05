@@ -42,7 +42,7 @@ io.on('connection', (socket) =>
                             me['socket'].emit('remake', hits);
 
                             let other = (us['users'][0] == me) ? us['users'][1] : us['users'][0];
-                            other['socket'].emit('timer', "0");
+                            other['socket'].emit('timer', "0", "0");
                         }
                     }
                 });
@@ -63,6 +63,12 @@ io.on('connection', (socket) =>
                         us['users'].push(me);
                         us['users'][0]['socket'].emit('started', 'started!');
                         us['users'][1]['socket'].emit('started', 'started!');
+
+                        if(us['users'][0]['disconnect'] != 0)
+                        {
+                            let timeToTimeout = Math.floor(30 - ((Date.now() - us['users'][0]['disconnect']) / 1000));
+                            me.emit('timer', "1", timeToTimeout.toString());
+                        }
                         founded = true;
                     }
                 });
@@ -155,7 +161,7 @@ io.on('connection', (socket) =>
             if(us['users'].length == 2)
             {
                 let other = (us['users'][0] == me) ? us['users'][1] : us['users'][0];
-                other['socket'].emit('timer', "1");
+                other['socket'].emit('timer', "1", "30");
             }
         }
     });
