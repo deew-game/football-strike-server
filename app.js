@@ -10,7 +10,7 @@ app.get('/', (req, res) => { res.end("<b>Hello Deew's</b>"); });
 
 io.on('connection', (socket) =>
 {
-    const us = null, me = null;
+    us = null, me = null;
     socket.on('join', (id) =>
     {
         console.log('> user connected', socket.id, '()  -->  ', id);
