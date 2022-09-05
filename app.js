@@ -36,7 +36,7 @@ io.on('connection', (socket) =>
                             me['socket'].emit('score', us['users'][0]['score'] + ':' + us['users'][1]['score']);
                             me['socket'].emit('remake', Object.keys(us['hits']));
 
-                            let other = (room['users'][0] == me) ? room['users'][1] : room['users'][0];
+                            let other = (us['users'][0] == me) ? us['users'][1] : us['users'][0];
                             other['socket'].emit('timer', "0");
                         }
                     }
@@ -54,9 +54,9 @@ io.on('connection', (socket) =>
                     if(room['users'].length == 1)
                     {
                         us = room;
-                        room['users'].push(me);
-                        room['users'][0]['socket'].emit('started', 'started!');
-                        room['users'][1]['socket'].emit('started', 'started!');
+                        us['users'].push(me);
+                        us['users'][0]['socket'].emit('started', 'started!');
+                        us['users'][1]['socket'].emit('started', 'started!');
                         founded = true;
                     }
                 });
@@ -109,7 +109,7 @@ io.on('connection', (socket) =>
 
                             us['open'] = false;
 
-                            let indx = rooms.indexOf(room);
+                            let indx = rooms.indexOf(us);
                             if (indx > -1)
                                 rooms.splice(indx, 1);
                         }
@@ -148,7 +148,7 @@ io.on('connection', (socket) =>
 
             if(us['users'].length == 2)
             {
-                let other = (room['users'][0] == me) ? room['users'][1] : room['users'][0];
+                let other = (us['users'][0] == me) ? us['users'][1] : us['users'][0];
                 other['socket'].emit('timer', "1");
             }
         }
