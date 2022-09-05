@@ -70,6 +70,8 @@ io.on('connection', (socket) =>
                             let timeToTimeout = Math.floor(timeout - ((Date.now() - us['users'][0]['disconnect']) / 1000));
                             me['socket'].emit('timer', "1", timeToTimeout.toString());
                         }
+                        else
+                            other['socket'].emit('timer', "0", "0");
                         founded = true;
                     }
                 });
@@ -79,6 +81,7 @@ io.on('connection', (socket) =>
                     us = {'id' : ids, 'open' : true, 'hits' : [], 'users' : [me]};
                     rooms.push(us);
                     console.log('> user', socket.id, 'created room id(', ids, ')  -->  ', id);
+                    other['socket'].emit('timer', "0", "0");
                     ids++;
                 }
             }
@@ -162,7 +165,8 @@ io.on('connection', (socket) =>
             if(us['users'].length == 2)
             {
                 let other = (us['users'][0] == me) ? us['users'][1] : us['users'][0];
-                other['socket'].emit('timer', "1", timeout.toString());
+                if(other['disconnect'] == 0)
+                    other['socket'].emit('timer', "1", timeout.toString());
             }
         }
     });
@@ -190,11 +194,12 @@ setInterval(() =>
                 if(room['users'].length == 2)
                 {
                     let winner = (room['users'][0] == user) ? room['users'][1] : room['users'][0];
-                    winner['socket'].emit('logs2', "You'r friend scared and run!<br>so...<br>Winner, Winner, Chicken Dinner!");
+                    if(winner['disconnect'] == 0)
+                        winner['socket'].emit('logs2', "You'r friend scared and run!<br>so...<br>Winner, Winner, Chicken Dinner!");
 
                     setTimeout(function ()
                     {
-                        if(winner['socket'])
+                        if(winner['disconnect'] == 0)
                             winner['socket'].emit('ended', 'ended!');
                     }, 5000);
                 }
