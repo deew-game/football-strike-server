@@ -177,7 +177,7 @@ setInterval(() =>
                 if(room['users'].length == 2)
                 {
                     let winner = (room['users'][0] == user) ? room['users'][1] : room['users'][0];
-                    winner.emit('logs2', "You'r friend scared and run!<br>So<br>Winner, Winner, Chicken Dinner!");
+                    winner['socket'].emit('logs2', "You'r friend scared and run!<br>so...<br>Winner, Winner, Chicken Dinner!");
 
                     setTimeout(function ()
                     {
