@@ -13,8 +13,8 @@ io.on('connection', (socket) =>
     let us = null, me = null;
     socket.on('join', (id) =>
     {
-        //try
-        //{
+        try
+        {
             //-- check user was already playing --> so rejoin him!
             let alreadyPlaying = false;
             rooms.forEach(room =>
@@ -31,6 +31,7 @@ io.on('connection', (socket) =>
                         me['socket'] = socket;
                         me['disconnect'] = 0;
                         
+                        //-- after rejoin, so we need sync user info!
                         if(us['users'].length == 2)
                         {
                             me['socket'].emit('score', us['users'][0]['score'] + ':' + us['users'][1]['score']);
@@ -65,6 +66,8 @@ io.on('connection', (socket) =>
                 console.log('> user connnected', socket.id, '()  -->  ', id);
                 me = {'socket' : socket, 'score' : 0, 'id' : id, 'disconnect' : 0};
                 let founded = false;
+
+                //-- look for a room with 1 user  -->  to join in room!s
                 rooms.forEach(room =>
                 {
                     if(room['users'].length == 1)
@@ -85,9 +88,10 @@ io.on('connection', (socket) =>
                     }
                 });
 
+                //-- room not founded?...  so i will create one...!!!
                 if(!founded)
                 {
-                    us = {'id' : ids, 'open' : true, 'hits' : [], 'users' : [me]};
+                    us = {'id' : ids, 'open' : true, 'hits' : [], 'users' : [me], '9bug' : true};
                     rooms.push(us);
                     console.log('> user', socket.id, 'created room id(', ids, ')  -->  ', id);
                     me['socket'].emit('timer', "0", "0");
@@ -104,6 +108,7 @@ io.on('connection', (socket) =>
                     let time = Date.now();
                     if(us['hits'][arg] == undefined || (time - us['hits'][arg]) < 500)
                     {
+                        //-- add score and delete hits, if shoot was valid!
                         us['hits'][arg] = time;
                         me['score'] = me['score']+1;
                         
@@ -116,32 +121,39 @@ io.on('connection', (socket) =>
         
                         console.log(arg, us['hits'][arg], Object.keys(us['hits']).length);
 
-                        if(Object.keys(us['hits']).length >= 9)
+
+                        //-- and finally after 9 shoots --> someone lose, someone win!
+                        if(Object.keys(us['hits']).length >= 9 && us['9bug'])
                         {
-                            let winner = (us['users'][0]['score'] > us['users'][1]['score']) ? us['users'][0] : us['users'][1];
-                            let looser = (us['users'][0]['score'] > us['users'][1]['score']) ? us['users'][1] : us['users'][0];
-
-                            winner['socket'].emit('logs2', "Winner, Winner, Chicken Dinner!");
-                            looser['socket'].emit('logs2', "You Lose... :(");
-
                             setTimeout(function ()
                             {
-                                if(us['users'][0]['socket'])
-                                    us['users'][0]['socket'].emit('ended', 'ended!');
-                                if(us['users'][1]['socket'])
-                                    us['users'][1]['socket'].emit('ended', 'ended!');
-                            }, 5000);
+                                let winner = (us['users'][0]['score'] >= us['users'][1]['score']) ? us['users'][0] : us['users'][1];
+                                let looser = (us['users'][0]['score'] >= us['users'][1]['score']) ? us['users'][1] : us['users'][0];
 
-                            us['open'] = false;
+                                winner['socket'].emit('logs2', "Winner, Winner, Chicken Dinner!");
+                                looser['socket'].emit('logs2', "You Lose... :(");
 
-                            let indx = rooms.indexOf(us);
-                            if (indx > -1)
-                                rooms.splice(indx, 1);
+                                setTimeout(function ()
+                                {
+                                    if(us['users'][0]['socket'])
+                                        us['users'][0]['socket'].emit('ended', 'ended!');
+                                    if(us['users'][1]['socket'])
+                                        us['users'][1]['socket'].emit('ended', 'ended!');
+                                }, 5000);
+
+                                us['open'] = false;
+
+                                let indx = rooms.indexOf(us);
+                                if (indx > -1)
+                                    rooms.splice(indx, 1);
+                            }, 1000);
+                            us['9bug'] = false;
                         }
                     }
                 }
                 else
                 {
+                    //-- just reload gamers, cus they are bugged i guess... :(
                     if(me['socket'])
                         me['socket'].emit('logs2', "You'r room was closed!<br>we are teleporting you soon...");
     
@@ -154,16 +166,16 @@ io.on('connection', (socket) =>
                     console.log('oh! looks bugged, so i reloaded gamers... :)');
                 }
             });
-        /*}
+        }
         catch(err)
         {
             console.log('> Looks like we have some error... (1)');
             console.log('> details: ' + err);
-        }*/
+        }
     });
 
 
-    //-- log when temp disconnecting ...
+    //-- some logs when temp disconnecting ...
     socket.on('disconnect', () =>
     {
         if(me !=  null)
@@ -200,6 +212,7 @@ setInterval(() =>
                 if (indx > -1)
                     rooms.splice(indx, 1);
 
+                //-- if other player still online --> he is a winner!
                 if(room['users'].length == 2)
                 {
                     let winner = (room['users'][0] == user) ? room['users'][1] : room['users'][0];
